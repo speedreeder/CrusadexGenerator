@@ -108,15 +108,15 @@ namespace CrosswordGenerator.Test
             var height = 15;
             var width = 15;
 
-            var sut = new CrosswordGenerator(new CrosswordGeneratorOptions { Height = height, Width = width, MinWords = 20, MaxWords = 20, MinWordLength = minWordLength, MaxWordLength = maxWordLength });
+            var sut = new CrosswordGenerator(new CrosswordGeneratorOptions { Height = height, Width = width, MinWords = 20, MaxWords = 20, MinWordLength = minWordLength, MaxWordLength = maxWordLength, MaxCubeJoints = 0 });
             var result = sut.Generate();
 
             var htmlOutput = CellListHelpers.GetHtmlStringTable(result, height);
             Debug.Print(htmlOutput);
             var wordsInResult = CellListHelpers.GetWordsFromCellList(result);
 
-            Assert.IsTrue(wordsInResult.TrueForAll(w => w.Cells.Count <= minWordLength));
-            Assert.IsTrue(wordsInResult.TrueForAll(w => w.Cells.Count >= maxWordLength));
+            Assert.IsTrue(wordsInResult.TrueForAll(w => w.Cells.Count <= minWordLength), htmlOutput);
+            Assert.IsTrue(wordsInResult.TrueForAll(w => w.Cells.Count >= maxWordLength), htmlOutput);
         }
     }
 }
