@@ -12,7 +12,7 @@
             {
                 modulo = (dividend - 1) % 26;
                 columnLabel = Convert.ToChar(65 + modulo).ToString() + columnLabel;
-                dividend = (int)((dividend - modulo) / 26);
+                dividend = (dividend - modulo) / 26;
             }
 
             return columnLabel;

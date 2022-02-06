@@ -7,4 +7,10 @@
         Down = 3,
         Left = 4
     }
+
+    internal enum AxisEnum
+    {
+        Vertical = 1,
+        Horzontal = 2
+    }
 }
