@@ -9,5 +9,6 @@
         }
         public bool IsVertical { get; set; }
         public List<CrosswordCell> Cells { get; set; }
+        public int? GeneratedIndex { get; set; }
     }
 }

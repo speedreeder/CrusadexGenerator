@@ -11,9 +11,14 @@ namespace CrosswordGenerator
         private int ThreeLetterWordsGenerated = 0;
         private int TotalCubeJointsGenerated = 0;
 
+        private int NumWords = 0;
+
         public CrosswordGenerator(CrosswordGeneratorOptions options)
         {
             _options = options;
+
+            var r = new Random();
+            NumWords = r.Next(_options.MinWords, _options.MaxWords + 1);
         }
 
         public List<CrosswordCell> Generate()
@@ -25,134 +30,171 @@ namespace CrosswordGenerator
                     cellList.Add(new CrosswordCell(j.ToColumnLabel(), i, false));
                 }
             }
-            var r = new Random();
-            var numWords = r.Next(_options.MinWords, _options.MaxWords + 1);
 
             var createdWords = new List<DirectionalWord>();
-            var lastWordCells = new DirectionalWord(true, new List<CrosswordCell>());
+            var lastCreatedWord = new DirectionalWord(true, new List<CrosswordCell>());
             var currentWordCells = new List<CrosswordCell>();
+            var attempts = 0;
+            var flipped = 0;
 
             do
             {
-                var isVertical = lastWordCells.IsVertical;
-                if (lastWordCells.Cells.Any())
+                attempts++;
+
+                var isVertical = lastCreatedWord.IsVertical;
+                if (lastCreatedWord.Cells.Any())
                 {
                     isVertical = !isVertical;
                 }
-
+                CrosswordCell startingCell;
                 var cubeJointsCreatedForInProgressWord = 0;
                 var inProgressWordCells = new List<CrosswordCell>();
-                var generatedMoreWordsThanWeCanUse = false;
-                var priorWordLengthsEqual = false;
-                var attempts = 0;
-                var flipped = 0;
-                do
+
+                Debug.Print($"Attempt {attempts}.");
+
+                if (attempts > 1 && attempts >= createdWords.Sum(c => c.Cells.Count) * _options.MaxWordLength * 2)
                 {
-                    attempts++;
-                    CrosswordCell startingCell;
-
-                    if(attempts > 1 && attempts >= createdWords.SelectMany(c => c.Cells).Count() * _options.MaxWordLength)
+                    if (flipped == 1)
                     {
-                        if(flipped == 1)
-                        {
-                            Debug.Print(CellListHelpers.GetHtmlStringTable(cellList, _options.Height));
+                        var generatedGrid = CellListHelpers.GetHtmlStringTable(cellList, _options.Height);
+                        Debug.Print(generatedGrid);
 
-                            throw new CrosswordGeneratorException($"Unable to generate puzzle with options shown after {attempts * 2} attempts. Succesfully generated {CellListHelpers.GetWordsFromCellList(cellList).Count}/{numWords}.",
-                                _options);
-                        }
-
-                        isVertical = !isVertical;
-                        flipped++;
-
-                        Debug.Print($"Tried {attempts} times using {(!isVertical ? "vertical" : "horizontal")} starting words. Flipping to {(isVertical ? "vertical" : "horizontal")}");
-                        attempts = 0;
-
+                        throw new CrosswordGeneratorException($"Unable to generate puzzle with options shown after {attempts * 2} attempts. Succesfully generated {CellListHelpers.GetWordsFromCellList(cellList).Count}/{NumWords}.",
+                            _options,
+                            generatedGrid);
                     }
 
-                    if (createdWords.Any(c => c.IsVertical == !isVertical))
+                    isVertical = !isVertical;
+                    flipped++;
+
+                    Debug.Print($"Tried {attempts} times using {(!isVertical ? "vertical" : "horizontal")} starting words. Flipping to {(isVertical ? "vertical" : "horizontal")}");
+                    attempts = 0;
+                }
+
+                if (createdWords.Count == 0)
+                {
+                    startingCell = ChooseStartingCellFromList(cellList);
+                }
+                else if (createdWords.Any(c => c.IsVertical == !isVertical))
+                {
+                    startingCell = GetStartingCell(isVertical, createdWords, cellList);
+                    if (startingCell == null) { continue; }
+                }
+                else
+                {
+                    var generatedGrid = CellListHelpers.GetHtmlStringTable(cellList, _options.Height);
+                    Debug.Print(generatedGrid);
+
+                    throw new CrosswordGeneratorException($"Unable to generate puzzle with options shown after {attempts} attempts. Succesfully generated {CellListHelpers.GetWordsFromCellList(cellList).Count}/{NumWords}.",
+                        _options,
+                        generatedGrid);
+                }
+
+                if (isVertical)
+                {
+                    var randomStartingRow = GetRandomStartingRowOrColumn(
+                        startingCell.Row, _options.MaxWordLength, _options.Height);
+
+                    if (!randomStartingRow.HasValue) { continue; }
+
+                    var randomLength = GetRandomLength(startingCell.Row, randomStartingRow.Value, _options.MinWordLength, _options.MaxWordLength);
+
+                    //down
+                    if (randomStartingRow < startingCell.Row)
                     {
-                        var startingWord = ChooseStartingWordFromDirection(!isVertical, createdWords);
-                        startingCell = ChooseWordStartingCell(startingWord.Cells);
+                        inProgressWordCells = cellList.Where(cell => cell.Column == startingCell.Column && cell.Row >= randomStartingRow && cell.Row < randomStartingRow + randomLength)
+                                                    .ToList();
                     }
+                    //up
                     else
                     {
-                        startingCell = ChooseWordStartingCell(cellList);
+                        inProgressWordCells = cellList.Where(cell => cell.Column == startingCell.Column && cell.Row <= randomStartingRow && cell.Row > randomStartingRow - randomLength)
+                                                    .ToList();
                     }
+                }
+                else
+                {
+                    var randomStartingColumn = GetRandomStartingRowOrColumn(
+                        startingCell.Column.ToColumnIndex(), _options.MaxWordLength, _options.Width);
 
-                    cubeJointsCreatedForInProgressWord = 0;
-                    if (isVertical)
+                    if (!randomStartingColumn.HasValue) { continue; }
+
+                    var randomLength = GetRandomLength(startingCell.Column.ToColumnIndex(), randomStartingColumn.Value, _options.MinWordLength, _options.MaxWordLength);
+
+                    //right
+                    if (randomStartingColumn < startingCell.Column.ToColumnIndex())
                     {
-                        var randomStartingRow = GetRandomStartingRowOrColumn(
-                            startingCell.Row, _options.MaxWordLength, _options.Height);
-
-                        if (!randomStartingRow.HasValue) continue; // We hit upon a starting position that cannot generate any legal words
-
-
-                        var randomLength = GetRandomLength(startingCell.Row, randomStartingRow.Value, _options.MinWordLength, _options.MaxWordLength);
-
-                        //down
-                        if (randomStartingRow < startingCell.Row)
-                        {
-                            inProgressWordCells = cellList.Where(cell => cell.Column == startingCell.Column && cell.Row >= randomStartingRow && cell.Row < randomStartingRow + randomLength)
-                                                        .ToList();
-                        }
-                        //up
-                        else
-                        {
-                            inProgressWordCells = cellList.Where(cell => cell.Column == startingCell.Column && cell.Row <= randomStartingRow && cell.Row > randomStartingRow - randomLength)
-                                                        .ToList();
-                        }
+                        inProgressWordCells = cellList.Where(cell => cell.Row == startingCell.Row && cell.Column.ToColumnIndex() >= randomStartingColumn && cell.Column.ToColumnIndex() < randomStartingColumn + randomLength)
+                                                    .ToList();
                     }
+                    //left
                     else
                     {
-                        var randomStartingColumn = GetRandomStartingRowOrColumn(
-                            startingCell.Column.ToColumnIndex(), _options.MaxWordLength, _options.Width);
-
-                        if (!randomStartingColumn.HasValue) continue; // We hit upon a starting position that cannot generate any legal words
-
-                        var randomLength = GetRandomLength(startingCell.Column.ToColumnIndex(), randomStartingColumn.Value, _options.MinWordLength, _options.MaxWordLength);
-
-                        //right
-                        if (randomStartingColumn < startingCell.Column.ToColumnIndex())
-                        {
-                            inProgressWordCells = cellList.Where(cell => cell.Row == startingCell.Row && cell.Column.ToColumnIndex() >= randomStartingColumn && cell.Column.ToColumnIndex() < randomStartingColumn + randomLength)
-                                                        .ToList();
-                        }
-                        //left
-                        else
-                        {
-                            inProgressWordCells = cellList.Where(cell => cell.Row == startingCell.Row && cell.Column.ToColumnIndex() <= randomStartingColumn && cell.Column.ToColumnIndex() > randomStartingColumn - randomLength)
-                                                        .ToList();
-                        }
+                        inProgressWordCells = cellList.Where(cell => cell.Row == startingCell.Row && cell.Column.ToColumnIndex() <= randomStartingColumn && cell.Column.ToColumnIndex() > randomStartingColumn - randomLength)
+                                                    .ToList();
                     }
+                }
 
+                if (_options.MaxCubeJoints.HasValue)
+                {
                     cubeJointsCreatedForInProgressWord = CellListHelpers.GetCubeJointsCreatedWithWord(cellList, inProgressWordCells);
-
-                    var priorCellList = cellList.Select(c => new CrosswordCell(c.Column, c.Row, c.Selected)).ToList();
-                    var priorWordList = CellListHelpers.GetWordsFromCellList(priorCellList);
-                    var tempCellList = cellList.Select(c => new CrosswordCell(c.Column, c.Row, c.Selected)).ToList();
-                    foreach (var cell in inProgressWordCells)
+                    if (TotalCubeJointsGenerated + cubeJointsCreatedForInProgressWord > _options.MaxCubeJoints)
                     {
-                        var tempCurrentWordCell = tempCellList.Where(c => c.Row == cell.Row && c.Column == cell.Column).First();
-                        tempCurrentWordCell.Selected = true;
+                        Debug.Print($"Created illegal number of cube joints: {TotalCubeJointsGenerated + cubeJointsCreatedForInProgressWord}/{_options.MaxCubeJoints}, " +
+                        $"{string.Join(", ", inProgressWordCells.Select(w => $"[{w.Row},{w.Column}]"))}");
+                        continue;
                     }
-                    var generatedWords = CellListHelpers.GetWordsFromCellList(tempCellList);
-                    generatedMoreWordsThanWeCanUse = generatedWords.Count > numWords;
+                }
 
-                    var j = priorWordList.Select(w => w.Cells.Count);
-                    Debug.Print(CellListHelpers.GetHtmlStringTable(cellList, _options.Height));
+                var priorCellList = cellList.Select(c => new CrosswordCell(c.Column, c.Row, c.Selected)).ToList();
+                var priorWordList = CellListHelpers.GetWordsFromCellList(priorCellList);
+                var tempCellList = cellList.Select(c => new CrosswordCell(c.Column, c.Row, c.Selected)).ToList();
+                foreach (var cell in inProgressWordCells)
+                {
+                    var tempCurrentWordCell = tempCellList.Where(c => c.Row == cell.Row && c.Column == cell.Column).First();
+                    tempCurrentWordCell.Selected = true;
+                }
+                Debug.Print(CellListHelpers.GetHtmlStringTable(cellList, _options.Height));
+                Debug.Print(CellListHelpers.GetHtmlStringTable(tempCellList, _options.Height));
 
-                    var f = generatedWords.GetRange(0, priorWordList.Count).Select(w => w.Cells.Count);
-                    Debug.Print(CellListHelpers.GetHtmlStringTable(tempCellList, _options.Height));
+                var generatedWords = CellListHelpers.GetWordsFromCellList(tempCellList);
+                if (generatedWords.Count > NumWords)
+                {
+                    Debug.Print($"Generated more words than we can use: {generatedWords.Count}/{NumWords}, " +
+                        $"{string.Join(", ", inProgressWordCells.Select(w => $"[{w.Row},{w.Column}]"))}");
+                    continue;
+                }
 
-                    priorWordLengthsEqual = priorWordList.Select(w => w.Cells.Count).SequenceEqual(generatedWords.GetRange(0, priorWordList.Count).Select(w => w.Cells.Count));
-                    Debug.Print($"Attempt {attempts}");
-                } while (_options.MaxCubeJoints.HasValue && TotalCubeJointsGenerated + cubeJointsCreatedForInProgressWord > _options.MaxCubeJoints
-                || cellList.Where(c => c.Selected && inProgressWordCells.Any(p => p.Row == c.Row && p.Column == c.Column)).Count() > 1
-                || generatedMoreWordsThanWeCanUse
-                || !priorWordLengthsEqual);
+                var priorWordLengths = priorWordList.GroupBy(p => p.Cells.Count).ToList();
+                var generatedWordLengths = generatedWords.GroupBy(g => g.Cells.Count).ToList();
 
-                TotalCubeJointsGenerated = TotalCubeJointsGenerated + cubeJointsCreatedForInProgressWord;
+                if (generatedWordLengths.Any(g => g.Key > _options.MaxWordLength) || generatedWordLengths.Any(g => g.Key < _options.MinWordLength))
+                {
+                    Debug.Print($"Created words of illegal length. " +
+                        $"{string.Join(", ", inProgressWordCells.Select(w => $"[{w.Row},{w.Column}]"))}");
+                    continue;
+                }
+                // We don't care at the moment if we change other word lengths, so long as the words are still legal
+                //else
+                //{
+                //    foreach (var lengthGroup in generatedWordLengths.Where(g => priorWordLengths.Any(p => p.Key == g.Key)))
+                //    {
+                //        var lengthGroupCount = lengthGroup.Count();
+
+                //        if (lengthGroup.Key == inProgressWordCells.Count)
+                //        {
+                //            lengthGroupCount--;
+                //        }
+
+                //        if (lengthGroupCount != priorWordLengths.Single(p => p.Key == lengthGroup.Key).Count())
+                //        {
+                //            priorWordLengthsEqual = false;
+                //            break;
+                //        }
+                //    }
+                //}
+
+                TotalCubeJointsGenerated += cubeJointsCreatedForInProgressWord;
 
                 foreach (var cell in inProgressWordCells)
                 {
@@ -160,20 +202,28 @@ namespace CrosswordGenerator
                     currentWordCell.Selected = true;
                 }
 
-                lastWordCells = new DirectionalWord(isVertical, inProgressWordCells);
-                createdWords.Add(lastWordCells);
-                Debug.Print($"Added {(isVertical ? "vertical" : "horizontal")} word: {string.Join(", ", lastWordCells.Cells.Select(w => $"[{w.Row},{w.Column}]"))}");
-            } while (CellListHelpers.GetWordsFromCellList(cellList).Count < numWords);
+                lastCreatedWord = new DirectionalWord(isVertical, inProgressWordCells);
+                lastCreatedWord.GeneratedIndex = createdWords.Count + 1;
+                createdWords.Add(lastCreatedWord);
+                Debug.Print($"{lastCreatedWord.GeneratedIndex}: Added {(isVertical ? "vertical" : "horizontal")} word: {string.Join(", ", lastCreatedWord.Cells.Select(w => $"[{w.Row},{w.Column}]"))}");
+            } while (CellListHelpers.GetWordsFromCellList(cellList).Count < NumWords);
 
             return cellList;
+        }
+
+        private CrosswordCell GetStartingCell(bool isVertical, List<DirectionalWord> createdWords, List<CrosswordCell> cellList)
+        {
+            var startingWord = ChooseStartingWordFromDirection(!isVertical, createdWords);
+            var startingCell = ChooseWordStartingCellFromDirectionalWord(startingWord, cellList);
+
+            return startingCell;
         }
 
         private int GetRandomLength(int startingColumnOrRow, int currentWordStartingColumnOrRow, int minLength, int maxLength)
         {
             var r = new Random();
-            var distance = Math.Abs(startingColumnOrRow - currentWordStartingColumnOrRow);
-            var result = r.Next(distance > minLength ? distance > maxLength ? maxLength : distance : minLength,
-                                distance > maxLength ? maxLength : distance >= minLength ? distance : minLength);
+            var distance = Math.Abs(startingColumnOrRow - currentWordStartingColumnOrRow) + 1;
+            var result = r.Next(distance, maxLength);
             return result;
         }
 
@@ -191,33 +241,51 @@ namespace CrosswordGenerator
                 excludes.Add(current - 2);
             }
 
-            var rangeStart = current - maxDistanceFromCurrent < 1 ? 1 : current - maxDistanceFromCurrent;
-            var count = maxDistanceFromCurrent * 2;
+            var range = new HashSet<int>();
 
-            //does the count exceed the max dimension?
-            if (rangeStart + maxDistanceFromCurrent * 2 > maxDimension)
+            var min = (current - maxDistanceFromCurrent + 1) > 1 ? (current - maxDistanceFromCurrent + 1) : 1;
+            var max = (current + maxDistanceFromCurrent - 1) < maxDimension ? (current + maxDistanceFromCurrent - 1) : maxDimension;
+
+            for (int i = min; i <= max; i++)
             {
-                count = maxDimension - rangeStart;
-            }
-
-            var range = Enumerable.Range(rangeStart, count - 1)
-                .Where(i => !excludes.Contains(i));
-
-            if (!range.Any())
-            {
-                return null;
+                if (excludes.Contains(i)) { continue; }
+                range.Add(i);
             }
 
             var rand = new Random();
-            int index = rand.Next(0, range.Count() - excludes.Count);
+            int index = rand.Next(0, range.Count);
             return range.ElementAt(index);
         }
 
-        private CrosswordCell ChooseWordStartingCell(List<CrosswordCell> input)
+        private CrosswordCell ChooseStartingCellFromList(List<CrosswordCell> cellList)
         {
             var r = new Random();
-            var randomIndex = r.Next(input.Count);
-            return input[randomIndex];
+            var randomIndex = r.Next(cellList.Count);
+            return cellList[randomIndex];
+        }
+
+        private CrosswordCell ChooseWordStartingCellFromDirectionalWord(DirectionalWord wordInput, List<CrosswordCell> cellList)
+        {
+            var range = wordInput.Cells.Select(c => c).ToList();
+            var htmlOutput = CellListHelpers.GetHtmlStringTable(cellList, _options.Height);
+
+            foreach (var wordCell in wordInput.Cells)
+            {
+                if (!wordInput.IsVertical && cellList.Any(c => c.Column == wordCell.Column && (c.Row == wordCell.Row + 1 || c.Row == wordCell.Row - 1) && c.Selected))
+                {
+                    range.Remove(wordCell);
+                }
+                else if(wordInput.IsVertical && cellList.Any(c => c.Row == wordCell.Row && (c.Column.ToColumnIndex() == wordCell.Column.ToColumnIndex() + 1 || c.Column.ToColumnIndex() == wordCell.Column.ToColumnIndex() - 1) && c.Selected))
+                {
+                    range.Remove(wordCell);
+                }
+            }
+
+            if(range.Count == 0) return null;
+
+            var r = new Random();
+            var randomIndex = r.Next(range.Count);
+            return range[randomIndex];
         }
 
         private DirectionalWord ChooseStartingWordFromDirection(bool isVertical, List<DirectionalWord> input)
@@ -225,9 +293,8 @@ namespace CrosswordGenerator
             var directionalList = input.Where(i => i.IsVertical == isVertical).ToList();
 
             var r = new Random();
-            var randomIndex = r.Next(directionalList.Count());
+            var randomIndex = r.Next(directionalList.Count);
             return directionalList[randomIndex];
         }
-
     }
 }
