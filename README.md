@@ -60,6 +60,11 @@ var htmlOutput = CrusadexCellListHelpers.GetHtmlStringTable(cellList);
 
 That will give you an HTML string that you can save as an HTML file or plug into any HTML visualizer. Here are some examples (using https://html.onlineviewer.net/):
 
+![10x10](https://github.com/speedreeder/CrusadexGenerator/blob/main/Examples/10x10.png)
+
+![15x15](https://github.com/speedreeder/CrusadexGenerator/blob/main/Examples/15x15.png)
+
+![8x8](https://github.com/speedreeder/CrusadexGenerator/blob/main/Examples/8x8cj.png)
 
 
 
