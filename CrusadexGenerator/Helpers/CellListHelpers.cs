@@ -1,14 +1,13 @@
-﻿using CrosswordGenerator.Extensions;
+﻿using CrusadexGenerator.Extensions;
 using HtmlTags;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("CrosswordGenerator.Test")]
-namespace CrosswordGenerator.Helpers
+[assembly: InternalsVisibleTo("CrusadexGenerator.Test")]
+namespace CrusadexGenerator.Helpers
 {
     internal static class CellListHelpers
     {
-        internal static List<DirectionalWord> GetWordsFromCellList(List<CrosswordCell> cellList)
+        internal static List<DirectionalWord> GetWordsFromCellList(List<CrusadexCell> cellList)
         {
             var words = new List<DirectionalWord>();
             var checkList = cellList.Where(c => c.Selected).ToList();
@@ -19,7 +18,7 @@ namespace CrosswordGenerator.Helpers
 
                 if (rightCell != null && !words.Any(w => !w.IsVertical && w.Cells.Contains(rightCell)))
                 {
-                    var word = new DirectionalWord(false, new List<CrosswordCell>());
+                    var word = new DirectionalWord(false, new List<CrusadexCell>());
                     word.Cells.Add(selectedCell);
                     var column = selectedCell.Column.ToColumnIndex();
                     while (checkList.Any(c => c.Row == selectedCell.Row && c.Column.ToColumnIndex() == column + 1))
@@ -34,7 +33,7 @@ namespace CrosswordGenerator.Helpers
                 var downCell = cellList.SingleOrDefault(c => c.Row == selectedCell.Row + 1 && c.Column == selectedCell.Column && c.Selected);
                 if (downCell != null && !words.Any(w => w.IsVertical && w.Cells.Contains(downCell)))
                 {
-                    var word = new DirectionalWord(true, new List<CrosswordCell>());
+                    var word = new DirectionalWord(true, new List<CrusadexCell>());
                     word.Cells.Add(selectedCell);
                     var row = selectedCell.Row;
                     while (checkList.Any(c => c.Column == selectedCell.Column && c.Row == row + 1))
@@ -51,9 +50,9 @@ namespace CrosswordGenerator.Helpers
             return words;
         }
 
-        internal static int GetCubeJointsCreatedWithWord(List<CrosswordCell> cellList, List<CrosswordCell> inProgressWordCells)
+        internal static int GetCubeJointsCreatedWithWord(List<CrusadexCell> cellList, List<CrusadexCell> inProgressWordCells)
         {
-            var copyOfCellList = cellList.Select(c => new CrosswordCell(c.Column, c.Row, c.Selected)).ToList();
+            var copyOfCellList = cellList.Select(c => new CrusadexCell(c.Column, c.Row, c.Selected)).ToList();
             foreach (var cell in inProgressWordCells)
             {
                 var currentWordCell = copyOfCellList.Where(c => c.Row == cell.Row && c.Column == cell.Column).First();
@@ -63,17 +62,17 @@ namespace CrosswordGenerator.Helpers
             return GetCubeJointsInList(copyOfCellList, inProgressWordCells);
         }
 
-        internal static int GetCubeJointsInList(List<CrosswordCell> cellList, List<CrosswordCell> inProgressWordCells)
+        internal static int GetCubeJointsInList(List<CrusadexCell> cellList, List<CrusadexCell> inProgressWordCells)
         {
-            var cubeJoints = new List<(CrosswordCell TopLeft, CrosswordCell TopRight, CrosswordCell BottomLeft, CrosswordCell BottomRight)>();
+            var cubeJoints = new List<(CrusadexCell TopLeft, CrusadexCell TopRight, CrusadexCell BottomLeft, CrusadexCell BottomRight)>();
             var checkList = cellList.Where(c => c.Selected).ToList();
 
-            if(inProgressWordCells != null && inProgressWordCells.Any())
+            if (inProgressWordCells != null && inProgressWordCells.Any())
             {
                 checkList = checkList.Where(c => inProgressWordCells.Any(k => k.Row == c.Row && k.Column == c.Column)).ToList();
             }
 
-            foreach(var cell in checkList)
+            foreach (var cell in checkList)
             {
                 var leftCell = cellList.SingleOrDefault(c => c.Row == cell.Row && c.Column.ToColumnIndex() == cell.Column.ToColumnIndex() - 1 && c.Selected);
                 var topLeftCell = cellList.SingleOrDefault(c => c.Row == cell.Row - 1 && c.Column.ToColumnIndex() == cell.Column.ToColumnIndex() - 1 && c.Selected);
@@ -94,14 +93,14 @@ namespace CrosswordGenerator.Helpers
                 {
                     var cube = (leftCell, topLeftCell, topCell, cell);
 
-                    if(!cubeJoints.Any(c => c == cube))
+                    if (!cubeJoints.Any(c => c == cube))
                     {
                         cubeJoints.Add(cube);
                     }
                 }
                 if (topRightCube)
                 {
-                    var cube = (cell, topCell, topRightCell, rightCell );
+                    var cube = (cell, topCell, topRightCell, rightCell);
 
                     if (!cubeJoints.Any(c => c == cube))
                     {
@@ -110,7 +109,7 @@ namespace CrosswordGenerator.Helpers
                 }
                 if (bottomRightCube)
                 {
-                    var cube = ( bottomCell, cell, rightCell, bottomRightCell);
+                    var cube = (bottomCell, cell, rightCell, bottomRightCell);
 
                     if (!cubeJoints.Any(c => c == cube))
                     {
@@ -119,7 +118,7 @@ namespace CrosswordGenerator.Helpers
                 }
                 if (bottomLeftCube)
                 {
-                    var cube = ( bottomLeftCell, leftCell, cell, bottomCell);
+                    var cube = (bottomLeftCell, leftCell, cell, bottomCell);
 
                     if (!cubeJoints.Any(c => c == cube))
                     {
@@ -131,7 +130,7 @@ namespace CrosswordGenerator.Helpers
             return cubeJoints.Count;
         }
 
-        internal static string GetHtmlStringTable(List<CrosswordCell> cellList, int height)
+        internal static string GetHtmlStringTable(List<CrusadexCell> cellList, int height)
         {
             var resultHtml = new HtmlTag("table").Style("border-collapse", "collapse").Style("border", "1px solid #FF0000");
 

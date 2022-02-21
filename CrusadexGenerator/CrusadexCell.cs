@@ -1,8 +1,8 @@
-﻿namespace CrosswordGenerator
+﻿namespace CrusadexGenerator
 {
-    public class CrosswordCell
+    public class CrusadexCell
     {
-        public CrosswordCell(string column, int row, bool selected)
+        public CrusadexCell(string column, int row, bool selected)
         {
             Column = column;
             Row = row;

@@ -1,6 +1,6 @@
-﻿namespace CrosswordGenerator
+﻿namespace CrusadexGenerator
 {
-    public class CrosswordGeneratorOptions
+    public class CrusadexGeneratorOptions
     {
         public int MaxWords { get; set; }
         public int MinWords { get; set; } = 1;

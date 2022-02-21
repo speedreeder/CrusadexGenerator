@@ -1,39 +1,40 @@
-﻿using CrosswordGenerator.Extensions;
-using CrosswordGenerator.Helpers;
+﻿using CrusadexGenerator.Extensions;
+using CrusadexGenerator.Helpers;
 using System.Diagnostics;
 
-namespace CrosswordGenerator
+namespace CrusadexGenerator
 {
-    public class CrosswordGenerator
+    public class CrusadexGenerator
     {
-        private readonly CrosswordGeneratorOptions _options;
+        private readonly CrusadexGeneratorOptions _options;
         private int TwoLetterWordsGenerated = 0;
         private int ThreeLetterWordsGenerated = 0;
         private int TotalCubeJointsGenerated = 0;
 
-        private int NumWords = 0;
+        private readonly int TargetNumWords = 0;
 
-        public CrosswordGenerator(CrosswordGeneratorOptions options)
+        public CrusadexGenerator(CrusadexGeneratorOptions options)
         {
             _options = options;
 
             var r = new Random();
-            NumWords = r.Next(_options.MinWords, _options.MaxWords + 1);
+            TargetNumWords = r.Next(_options.MinWords, _options.MaxWords + 1);
         }
 
-        public List<CrosswordCell> Generate()
+        public List<CrusadexCell> Generate()
         {
-            var cellList = new List<CrosswordCell>();
-            for (int i = 1; i <= _options.Height; i++) { 
-                for(int j = 1; j <= _options.Width; j++)
+            var cellList = new List<CrusadexCell>();
+            for (int i = 1; i <= _options.Height; i++)
+            {
+                for (int j = 1; j <= _options.Width; j++)
                 {
-                    cellList.Add(new CrosswordCell(j.ToColumnLabel(), i, false));
+                    cellList.Add(new CrusadexCell(j.ToColumnLabel(), i, false));
                 }
             }
 
             var createdWords = new List<DirectionalWord>();
-            var lastCreatedWord = new DirectionalWord(true, new List<CrosswordCell>());
-            var currentWordCells = new List<CrosswordCell>();
+            var lastCreatedWord = new DirectionalWord(true, new List<CrusadexCell>());
+            var currentWordCells = new List<CrusadexCell>();
             var attempts = 0;
             var flipped = 0;
 
@@ -46,9 +47,9 @@ namespace CrosswordGenerator
                 {
                     isVertical = !isVertical;
                 }
-                CrosswordCell startingCell;
+                CrusadexCell startingCell;
                 var cubeJointsCreatedForInProgressWord = 0;
-                var inProgressWordCells = new List<CrosswordCell>();
+                var inProgressWordCells = new List<CrusadexCell>();
 
                 Debug.Print($"Attempt {attempts}.");
 
@@ -59,7 +60,7 @@ namespace CrosswordGenerator
                         var generatedGrid = CellListHelpers.GetHtmlStringTable(cellList, _options.Height);
                         Debug.Print(generatedGrid);
 
-                        throw new CrosswordGeneratorException($"Unable to generate puzzle with options shown after {attempts * 2} attempts. Succesfully generated {CellListHelpers.GetWordsFromCellList(cellList).Count}/{NumWords}.",
+                        throw new CrusadexGeneratorException($"Unable to generate puzzle with options shown after {attempts * 2} attempts. Succesfully generated {CellListHelpers.GetWordsFromCellList(cellList).Count}/{TargetNumWords}.",
                             _options,
                             generatedGrid);
                     }
@@ -77,19 +78,10 @@ namespace CrosswordGenerator
                                                                                   && c.Column.ToColumnIndex() == Math.Floor(cellList.Select(p => p.Column.ToColumnIndex())
                                                                                                                                     .Average())).ToList());
                 }
-                else if (createdWords.Any(c => c.IsVertical == !isVertical))
+                else
                 {
                     startingCell = GetStartingCell(isVertical, createdWords, cellList);
                     if (startingCell == null) { continue; }
-                }
-                else
-                {
-                    var generatedGrid = CellListHelpers.GetHtmlStringTable(cellList, _options.Height);
-                    Debug.Print(generatedGrid);
-
-                    throw new CrosswordGeneratorException($"Unable to generate puzzle with options shown after {attempts} attempts. Succesfully generated {CellListHelpers.GetWordsFromCellList(cellList).Count}/{NumWords}.",
-                        _options,
-                        generatedGrid);
                 }
 
                 if (isVertical)
@@ -99,7 +91,7 @@ namespace CrosswordGenerator
 
                     if (!randomStartingRow.HasValue) { continue; }
 
-                    var randomLength = GetRandomLength(startingCell.Row, randomStartingRow.Value, _options.MinWordLength, _options.MaxWordLength);
+                    var randomLength = GetRandomLength(startingCell.Row, randomStartingRow.Value, _options.MaxWordLength);
 
                     //down
                     if (randomStartingRow < startingCell.Row)
@@ -121,7 +113,7 @@ namespace CrosswordGenerator
 
                     if (!randomStartingColumn.HasValue) { continue; }
 
-                    var randomLength = GetRandomLength(startingCell.Column.ToColumnIndex(), randomStartingColumn.Value, _options.MinWordLength, _options.MaxWordLength);
+                    var randomLength = GetRandomLength(startingCell.Column.ToColumnIndex(), randomStartingColumn.Value, _options.MaxWordLength);
 
                     //right
                     if (randomStartingColumn < startingCell.Column.ToColumnIndex())
@@ -148,9 +140,9 @@ namespace CrosswordGenerator
                     }
                 }
 
-                var priorCellList = cellList.Select(c => new CrosswordCell(c.Column, c.Row, c.Selected)).ToList();
+                var priorCellList = cellList.Select(c => new CrusadexCell(c.Column, c.Row, c.Selected)).ToList();
                 var priorWordList = CellListHelpers.GetWordsFromCellList(priorCellList);
-                var tempCellList = cellList.Select(c => new CrosswordCell(c.Column, c.Row, c.Selected)).ToList();
+                var tempCellList = cellList.Select(c => new CrusadexCell(c.Column, c.Row, c.Selected)).ToList();
                 foreach (var cell in inProgressWordCells)
                 {
                     var tempCurrentWordCell = tempCellList.Where(c => c.Row == cell.Row && c.Column == cell.Column).First();
@@ -160,9 +152,9 @@ namespace CrosswordGenerator
                 Debug.Print(CellListHelpers.GetHtmlStringTable(tempCellList, _options.Height));
 
                 var generatedWords = CellListHelpers.GetWordsFromCellList(tempCellList);
-                if (generatedWords.Count > NumWords)
+                if (generatedWords.Count > TargetNumWords)
                 {
-                    Debug.Print($"Generated more words than we can use: {generatedWords.Count}/{NumWords}, " +
+                    Debug.Print($"Generated more words than we can use: {generatedWords.Count}/{TargetNumWords}, " +
                         $"{string.Join(", ", inProgressWordCells.Select(w => $"[{w.Row},{w.Column}]"))}");
                     continue;
                 }
@@ -176,25 +168,6 @@ namespace CrosswordGenerator
                         $"{string.Join(", ", inProgressWordCells.Select(w => $"[{w.Row},{w.Column}]"))}");
                     continue;
                 }
-                // We don't care at the moment if we change other word lengths, so long as the words are still legal
-                //else
-                //{
-                //    foreach (var lengthGroup in generatedWordLengths.Where(g => priorWordLengths.Any(p => p.Key == g.Key)))
-                //    {
-                //        var lengthGroupCount = lengthGroup.Count();
-
-                //        if (lengthGroup.Key == inProgressWordCells.Count)
-                //        {
-                //            lengthGroupCount--;
-                //        }
-
-                //        if (lengthGroupCount != priorWordLengths.Single(p => p.Key == lengthGroup.Key).Count())
-                //        {
-                //            priorWordLengthsEqual = false;
-                //            break;
-                //        }
-                //    }
-                //}
 
                 TotalCubeJointsGenerated += cubeJointsCreatedForInProgressWord;
 
@@ -204,16 +177,18 @@ namespace CrosswordGenerator
                     currentWordCell.Selected = true;
                 }
 
-                lastCreatedWord = new DirectionalWord(isVertical, inProgressWordCells);
-                lastCreatedWord.GeneratedIndex = createdWords.Count + 1;
+                lastCreatedWord = new DirectionalWord(isVertical, inProgressWordCells)
+                {
+                    GeneratedIndex = createdWords.Count + 1
+                };
                 createdWords.Add(lastCreatedWord);
                 Debug.Print($"{lastCreatedWord.GeneratedIndex}: Added {(isVertical ? "vertical" : "horizontal")} word: {string.Join(", ", lastCreatedWord.Cells.Select(w => $"[{w.Row},{w.Column}]"))}");
-            } while (CellListHelpers.GetWordsFromCellList(cellList).Count < NumWords);
+            } while (CellListHelpers.GetWordsFromCellList(cellList).Count < TargetNumWords);
 
             return cellList;
         }
 
-        private CrosswordCell GetStartingCell(bool isVertical, List<DirectionalWord> createdWords, List<CrosswordCell> cellList)
+        private CrusadexCell GetStartingCell(bool isVertical, List<DirectionalWord> createdWords, List<CrusadexCell> cellList)
         {
             var startingWord = ChooseStartingWordFromDirection(!isVertical, createdWords);
             var startingCell = ChooseWordStartingCellFromDirectionalWord(startingWord, cellList);
@@ -221,7 +196,7 @@ namespace CrosswordGenerator
             return startingCell;
         }
 
-        private int GetRandomLength(int startingColumnOrRow, int currentWordStartingColumnOrRow, int minLength, int maxLength)
+        private int GetRandomLength(int startingColumnOrRow, int currentWordStartingColumnOrRow, int maxLength)
         {
             var r = new Random();
             var distance = Math.Abs(startingColumnOrRow - currentWordStartingColumnOrRow) + 1;
@@ -232,7 +207,7 @@ namespace CrosswordGenerator
         private int? GetRandomStartingRowOrColumn(int current, int maxDistanceFromCurrent, int maxDimension)
         {
             var excludes = new HashSet<int> { current };
-            if(_options.MaxTwoLetterWords != null && _options.MaxTwoLetterWords == TwoLetterWordsGenerated)
+            if (_options.MaxTwoLetterWords != null && _options.MaxTwoLetterWords == TwoLetterWordsGenerated)
             {
                 excludes.Add(current + 1);
                 excludes.Add(current - 1);
@@ -245,8 +220,8 @@ namespace CrosswordGenerator
 
             var range = new HashSet<int>();
 
-            var min = (current - maxDistanceFromCurrent + 1) > 1 ? (current - maxDistanceFromCurrent + 1) : 1;
-            var max = (current + maxDistanceFromCurrent - 1) < maxDimension ? (current + maxDistanceFromCurrent - 1) : maxDimension;
+            var min = current - maxDistanceFromCurrent + 1 > 1 ? current - maxDistanceFromCurrent + 1 : 1;
+            var max = current + maxDistanceFromCurrent - 1 < maxDimension ? current + maxDistanceFromCurrent - 1 : maxDimension;
 
             for (int i = min; i <= max; i++)
             {
@@ -259,14 +234,14 @@ namespace CrosswordGenerator
             return range.ElementAt(index);
         }
 
-        private CrosswordCell ChooseStartingCellFromList(List<CrosswordCell> cellList)
+        private CrusadexCell ChooseStartingCellFromList(List<CrusadexCell> cellList)
         {
             var r = new Random();
             var randomIndex = r.Next(cellList.Count);
             return cellList[randomIndex];
         }
 
-        private CrosswordCell ChooseWordStartingCellFromDirectionalWord(DirectionalWord wordInput, List<CrosswordCell> cellList)
+        private CrusadexCell ChooseWordStartingCellFromDirectionalWord(DirectionalWord wordInput, List<CrusadexCell> cellList)
         {
             var range = wordInput.Cells.Select(c => c).ToList();
             var htmlOutput = CellListHelpers.GetHtmlStringTable(cellList, _options.Height);
@@ -277,13 +252,13 @@ namespace CrosswordGenerator
                 {
                     range.Remove(wordCell);
                 }
-                else if(wordInput.IsVertical && cellList.Any(c => c.Row == wordCell.Row && (c.Column.ToColumnIndex() == wordCell.Column.ToColumnIndex() + 1 || c.Column.ToColumnIndex() == wordCell.Column.ToColumnIndex() - 1) && c.Selected))
+                else if (wordInput.IsVertical && cellList.Any(c => c.Row == wordCell.Row && (c.Column.ToColumnIndex() == wordCell.Column.ToColumnIndex() + 1 || c.Column.ToColumnIndex() == wordCell.Column.ToColumnIndex() - 1) && c.Selected))
                 {
                     range.Remove(wordCell);
                 }
             }
 
-            if(range.Count == 0) return null;
+            if (range.Count == 0) return null;
 
             var r = new Random();
             var randomIndex = r.Next(range.Count);

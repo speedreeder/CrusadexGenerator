@@ -1,4 +1,4 @@
-﻿namespace CrosswordGenerator.Extensions
+﻿namespace CrusadexGenerator.Extensions
 {
     public static class StringExtensions
     {
@@ -8,7 +8,7 @@
             for (int ind = 0, pow = colLabel.Count() - 1; ind < colLabel.Count(); ++ind, --pow)
             {
                 var cVal = Convert.ToInt32(colLabel[ind]) - 64;
-                colIndex += cVal * ((int)Math.Pow(26, pow));
+                colIndex += cVal * (int)Math.Pow(26, pow);
             }
             return colIndex;
         }

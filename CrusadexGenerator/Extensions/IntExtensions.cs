@@ -1,4 +1,4 @@
-﻿namespace CrosswordGenerator.Extensions
+﻿namespace CrusadexGenerator.Extensions
 {
     internal static class IntExtensions
     {

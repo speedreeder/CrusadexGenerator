@@ -1,10 +1,10 @@
-using CrosswordGenerator.Helpers;
+using CrusadexGenerator.Helpers;
 using NUnit.Framework;
 using System.Diagnostics;
 
-namespace CrosswordGenerator.Test
+namespace CrusadexGenerator.Test
 {
-    public class CrosswordGeneratorTests
+    public class CrusadexGeneratorTests
     {
         [Test, Repeat(20)]
         [TestCase(4, 4)]
@@ -16,24 +16,24 @@ namespace CrosswordGenerator.Test
         [TestCase(20, 10)]
         public void Generate_ResultGridHasCorrectNumberOfCells(int height, int width)
         {
-            var sut = new CrosswordGenerator(new CrosswordGeneratorOptions { Height = height, Width = width});
+            var sut = new CrusadexGenerator(new CrusadexGeneratorOptions { Height = height, Width = width });
             var result = sut.Generate();
 
             var htmlOutput = CellListHelpers.GetHtmlStringTable(result, height);
             Debug.Print(htmlOutput);
 
-            Assert.AreEqual(height*width, result.Count, htmlOutput);
+            Assert.AreEqual(height * width, result.Count, htmlOutput);
         }
 
         [Test, Repeat(20)]
         [TestCase(6, 4, 8, 8, 2)]
-        [TestCase(8, 5, 8, 8, 2)] //sometimes impossible
-        [TestCase(10, 6, 8, 8, 2)] //sometimes impossible
+        [TestCase(8, 5, 8, 8, 2)]
+        [TestCase(10, 6, 8, 8, 2)]
         [TestCase(10, 7, 12, 12, 4)]
         [TestCase(10, 8, 15, 15, 6)]
         public void Generate_ResultGridHasCorrectNumberOfCubeJoints(int numberOfWords, int maxWordLength, int height, int width, int maxCubeJoints)
         {
-            var sut = new CrosswordGenerator(new CrosswordGeneratorOptions
+            var sut = new CrusadexGenerator(new CrusadexGeneratorOptions
             {
                 Height = height,
                 Width = width,
@@ -58,21 +58,21 @@ namespace CrosswordGenerator.Test
 
                     Assert.IsTrue(numCubeJoints <= maxCubeJoints, htmlOutput);
                 }
-                catch (CrosswordGeneratorException ex)
+                catch (CrusadexGeneratorException ex)
                 {
                     Debug.Print(ex.Message);
                 }
-            } while(!success);
+            } while (!success);
         }
 
         [Test]
-        [TestCase(10, 4, 6, 6, 2)]
+        [TestCase(10, 4, 5, 5, 2)]
         [TestCase(15, 4, 8, 8, 1)]
-        public void Generate_ThrowCrosswordGeneratorException(int numberOfWords, int maxWordLength, int height, int width, int maxCubeJoints)
+        public void Generate_ThrowCrusadexGeneratorException(int numberOfWords, int maxWordLength, int height, int width, int maxCubeJoints)
         {
-            Assert.Throws<CrosswordGeneratorException>(() =>
+            Assert.Throws<CrusadexGeneratorException>(() =>
             {
-                var sut = new CrosswordGenerator(new CrosswordGeneratorOptions
+                var sut = new CrusadexGenerator(new CrusadexGeneratorOptions
                 {
                     Height = height,
                     Width = width,
@@ -100,7 +100,7 @@ namespace CrosswordGenerator.Test
             var height = 20;
             var width = 20;
 
-            var sut = new CrosswordGenerator(new CrosswordGeneratorOptions { Height = height, Width = width, MinWords = minNumberOfWords, MaxWords = maxNumberOfWords });
+            var sut = new CrusadexGenerator(new CrusadexGeneratorOptions { Height = height, Width = width, MinWords = minNumberOfWords, MaxWords = maxNumberOfWords });
             var result = sut.Generate();
 
             var htmlOutput = CellListHelpers.GetHtmlStringTable(result, height);
@@ -127,14 +127,15 @@ namespace CrosswordGenerator.Test
             {
                 try
                 {
-                    var sut = new CrosswordGenerator(new CrosswordGeneratorOptions { 
-                        Height = height, 
+                    var sut = new CrusadexGenerator(new CrusadexGeneratorOptions
+                    {
+                        Height = height,
                         Width = width,
-                        MinWords = 15, 
-                        MaxWords = 15, 
+                        MinWords = 15,
+                        MaxWords = 15,
                         MinWordLength = minWordLength,
                         MaxWordLength = maxWordLength,
-                        MaxCubeJoints = 1 
+                        MaxCubeJoints = 1
                     });
                     var result = sut.Generate();
                     success = true;
@@ -145,12 +146,13 @@ namespace CrosswordGenerator.Test
 
                     Assert.IsTrue(wordsInResult.TrueForAll(w => w.Cells.Count >= minWordLength), htmlOutput);
                     Assert.IsTrue(wordsInResult.TrueForAll(w => w.Cells.Count <= maxWordLength), htmlOutput);
-                } catch (CrosswordGeneratorException ex)
+                }
+                catch (CrusadexGeneratorException ex)
                 {
                     Debug.Print(ex.Message);
                 }
             } while (!success);
-            
+
         }
     }
 }
