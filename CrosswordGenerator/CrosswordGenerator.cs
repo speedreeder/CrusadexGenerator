@@ -73,7 +73,9 @@ namespace CrosswordGenerator
 
                 if (createdWords.Count == 0)
                 {
-                    startingCell = ChooseStartingCellFromList(cellList);
+                    startingCell = ChooseStartingCellFromList(cellList.Where(c => c.Row == Math.Floor(cellList.Select(r => r.Row).Average())
+                                                                                  && c.Column.ToColumnIndex() == Math.Floor(cellList.Select(p => p.Column.ToColumnIndex())
+                                                                                                                                    .Average())).ToList());
                 }
                 else if (createdWords.Any(c => c.IsVertical == !isVertical))
                 {

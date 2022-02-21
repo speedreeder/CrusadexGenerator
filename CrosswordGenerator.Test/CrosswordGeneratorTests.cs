@@ -27,8 +27,8 @@ namespace CrosswordGenerator.Test
 
         [Test, Repeat(20)]
         [TestCase(6, 4, 8, 8, 2)]
-        //[TestCase(8, 5, 8, 8, 2)] //sometimes impossible
-        //[TestCase(10, 6, 8, 8, 2)] //sometimes impossible
+        [TestCase(8, 5, 8, 8, 2)] //sometimes impossible
+        [TestCase(10, 6, 8, 8, 2)] //sometimes impossible
         [TestCase(10, 7, 12, 12, 4)]
         [TestCase(10, 8, 15, 15, 6)]
         public void Generate_ResultGridHasCorrectNumberOfCubeJoints(int numberOfWords, int maxWordLength, int height, int width, int maxCubeJoints)
@@ -42,13 +42,27 @@ namespace CrosswordGenerator.Test
                 MaxCubeJoints = maxCubeJoints,
                 MaxWordLength = maxWordLength
             });
-            var result = sut.Generate();
 
-            var numCubeJoints = CellListHelpers.GetCubeJointsInList(result, null);
-            var htmlOutput = CellListHelpers.GetHtmlStringTable(result, height);
-            Debug.Print(htmlOutput);
+            var success = false;
 
-            Assert.IsTrue(numCubeJoints <= maxCubeJoints, htmlOutput);
+            do
+            {
+                try
+                {
+                    var result = sut.Generate();
+                    success = true;
+
+                    var numCubeJoints = CellListHelpers.GetCubeJointsInList(result, null);
+                    var htmlOutput = CellListHelpers.GetHtmlStringTable(result, height);
+                    Debug.Print(htmlOutput);
+
+                    Assert.IsTrue(numCubeJoints <= maxCubeJoints, htmlOutput);
+                }
+                catch (CrosswordGeneratorException ex)
+                {
+                    Debug.Print(ex.Message);
+                }
+            } while(!success);
         }
 
         [Test]
@@ -102,21 +116,41 @@ namespace CrosswordGenerator.Test
         [TestCase(2, 4)]
         [TestCase(2, 8)]
         [TestCase(4, 8)]
-        [TestCase(6, 12)]
+        [TestCase(5, 10)]
         public void Generate_ResultWordsAreCorrectLength(int minWordLength, int maxWordLength)
         {
             var height = 15;
             var width = 15;
 
-            var sut = new CrosswordGenerator(new CrosswordGeneratorOptions { Height = height, Width = width, MinWords = 20, MaxWords = 20, MinWordLength = minWordLength, MaxWordLength = maxWordLength, MaxCubeJoints = 1 });
-            var result = sut.Generate();
+            var success = false;
+            do
+            {
+                try
+                {
+                    var sut = new CrosswordGenerator(new CrosswordGeneratorOptions { 
+                        Height = height, 
+                        Width = width,
+                        MinWords = 15, 
+                        MaxWords = 15, 
+                        MinWordLength = minWordLength,
+                        MaxWordLength = maxWordLength,
+                        MaxCubeJoints = 1 
+                    });
+                    var result = sut.Generate();
+                    success = true;
 
-            var htmlOutput = CellListHelpers.GetHtmlStringTable(result, height);
-            Debug.Print(htmlOutput);
-            var wordsInResult = CellListHelpers.GetWordsFromCellList(result);
+                    var htmlOutput = CellListHelpers.GetHtmlStringTable(result, height);
+                    Debug.Print(htmlOutput);
+                    var wordsInResult = CellListHelpers.GetWordsFromCellList(result);
 
-            Assert.IsTrue(wordsInResult.TrueForAll(w => w.Cells.Count >= minWordLength), htmlOutput);
-            Assert.IsTrue(wordsInResult.TrueForAll(w => w.Cells.Count <= maxWordLength), htmlOutput);
+                    Assert.IsTrue(wordsInResult.TrueForAll(w => w.Cells.Count >= minWordLength), htmlOutput);
+                    Assert.IsTrue(wordsInResult.TrueForAll(w => w.Cells.Count <= maxWordLength), htmlOutput);
+                } catch (CrosswordGeneratorException ex)
+                {
+                    Debug.Print(ex.Message);
+                }
+            } while (!success);
+            
         }
     }
 }
