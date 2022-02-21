@@ -19,7 +19,7 @@ namespace CrusadexGenerator.Test
             var sut = new CrusadexGenerator(new CrusadexGeneratorOptions { Height = height, Width = width });
             var result = sut.Generate();
 
-            var htmlOutput = CellListHelpers.GetHtmlStringTable(result, height);
+            var htmlOutput = CrusadexCellListHelpers.GetHtmlStringTable(result);
             Debug.Print(htmlOutput);
 
             Assert.AreEqual(height * width, result.Count, htmlOutput);
@@ -52,8 +52,8 @@ namespace CrusadexGenerator.Test
                     var result = sut.Generate();
                     success = true;
 
-                    var numCubeJoints = CellListHelpers.GetCubeJointsInList(result, null);
-                    var htmlOutput = CellListHelpers.GetHtmlStringTable(result, height);
+                    var numCubeJoints = CrusadexCellListHelpers.GetCubeJointsInList(result, null);
+                    var htmlOutput = CrusadexCellListHelpers.GetHtmlStringTable(result);
                     Debug.Print(htmlOutput);
 
                     Assert.IsTrue(numCubeJoints <= maxCubeJoints, htmlOutput);
@@ -83,8 +83,8 @@ namespace CrusadexGenerator.Test
                 });
                 var result = sut.Generate();
 
-                var numCubeJoints = CellListHelpers.GetCubeJointsInList(result, null);
-                var htmlOutput = CellListHelpers.GetHtmlStringTable(result, height);
+                var numCubeJoints = CrusadexCellListHelpers.GetCubeJointsInList(result, null);
+                var htmlOutput = CrusadexCellListHelpers.GetHtmlStringTable(result);
                 Debug.Print(htmlOutput);
             });
         }
@@ -103,9 +103,9 @@ namespace CrusadexGenerator.Test
             var sut = new CrusadexGenerator(new CrusadexGeneratorOptions { Height = height, Width = width, MinWords = minNumberOfWords, MaxWords = maxNumberOfWords });
             var result = sut.Generate();
 
-            var htmlOutput = CellListHelpers.GetHtmlStringTable(result, height);
+            var htmlOutput = CrusadexCellListHelpers.GetHtmlStringTable(result);
             Debug.Print(htmlOutput);
-            var wordsInResult = CellListHelpers.GetWordsFromCellList(result);
+            var wordsInResult = CrusadexCellListHelpers.GetWordsFromCellList(result);
 
             Assert.GreaterOrEqual(wordsInResult.Count, minNumberOfWords, htmlOutput);
             Assert.LessOrEqual(wordsInResult.Count, maxNumberOfWords, htmlOutput);
@@ -140,9 +140,9 @@ namespace CrusadexGenerator.Test
                     var result = sut.Generate();
                     success = true;
 
-                    var htmlOutput = CellListHelpers.GetHtmlStringTable(result, height);
+                    var htmlOutput = CrusadexCellListHelpers.GetHtmlStringTable(result);
                     Debug.Print(htmlOutput);
-                    var wordsInResult = CellListHelpers.GetWordsFromCellList(result);
+                    var wordsInResult = CrusadexCellListHelpers.GetWordsFromCellList(result);
 
                     Assert.IsTrue(wordsInResult.TrueForAll(w => w.Cells.Count >= minWordLength), htmlOutput);
                     Assert.IsTrue(wordsInResult.TrueForAll(w => w.Cells.Count <= maxWordLength), htmlOutput);

@@ -57,10 +57,10 @@ namespace CrusadexGenerator
                 {
                     if (flipped == 1)
                     {
-                        var generatedGrid = CellListHelpers.GetHtmlStringTable(cellList, _options.Height);
+                        var generatedGrid = CrusadexCellListHelpers.GetHtmlStringTable(cellList);
                         Debug.Print(generatedGrid);
 
-                        throw new CrusadexGeneratorException($"Unable to generate puzzle with options shown after {attempts * 2} attempts. Succesfully generated {CellListHelpers.GetWordsFromCellList(cellList).Count}/{TargetNumWords}.",
+                        throw new CrusadexGeneratorException($"Unable to generate puzzle with options shown after {attempts * 2} attempts. Succesfully generated {CrusadexCellListHelpers.GetWordsFromCellList(cellList).Count}/{TargetNumWords}.",
                             _options,
                             generatedGrid);
                     }
@@ -131,7 +131,7 @@ namespace CrusadexGenerator
 
                 if (_options.MaxCubeJoints.HasValue)
                 {
-                    cubeJointsCreatedForInProgressWord = CellListHelpers.GetCubeJointsCreatedWithWord(cellList, inProgressWordCells);
+                    cubeJointsCreatedForInProgressWord = CrusadexCellListHelpers.GetCubeJointsCreatedWithWord(cellList, inProgressWordCells);
                     if (TotalCubeJointsGenerated + cubeJointsCreatedForInProgressWord > _options.MaxCubeJoints)
                     {
                         Debug.Print($"Created illegal number of cube joints: {TotalCubeJointsGenerated + cubeJointsCreatedForInProgressWord}/{_options.MaxCubeJoints}, " +
@@ -141,17 +141,17 @@ namespace CrusadexGenerator
                 }
 
                 var priorCellList = cellList.Select(c => new CrusadexCell(c.Column, c.Row, c.Selected)).ToList();
-                var priorWordList = CellListHelpers.GetWordsFromCellList(priorCellList);
+                var priorWordList = CrusadexCellListHelpers.GetWordsFromCellList(priorCellList);
                 var tempCellList = cellList.Select(c => new CrusadexCell(c.Column, c.Row, c.Selected)).ToList();
                 foreach (var cell in inProgressWordCells)
                 {
                     var tempCurrentWordCell = tempCellList.Where(c => c.Row == cell.Row && c.Column == cell.Column).First();
                     tempCurrentWordCell.Selected = true;
                 }
-                Debug.Print(CellListHelpers.GetHtmlStringTable(cellList, _options.Height));
-                Debug.Print(CellListHelpers.GetHtmlStringTable(tempCellList, _options.Height));
+                Debug.Print(CrusadexCellListHelpers.GetHtmlStringTable(cellList));
+                Debug.Print(CrusadexCellListHelpers.GetHtmlStringTable(tempCellList));
 
-                var generatedWords = CellListHelpers.GetWordsFromCellList(tempCellList);
+                var generatedWords = CrusadexCellListHelpers.GetWordsFromCellList(tempCellList);
                 if (generatedWords.Count > TargetNumWords)
                 {
                     Debug.Print($"Generated more words than we can use: {generatedWords.Count}/{TargetNumWords}, " +
@@ -183,7 +183,7 @@ namespace CrusadexGenerator
                 };
                 createdWords.Add(lastCreatedWord);
                 Debug.Print($"{lastCreatedWord.GeneratedIndex}: Added {(isVertical ? "vertical" : "horizontal")} word: {string.Join(", ", lastCreatedWord.Cells.Select(w => $"[{w.Row},{w.Column}]"))}");
-            } while (CellListHelpers.GetWordsFromCellList(cellList).Count < TargetNumWords);
+            } while (CrusadexCellListHelpers.GetWordsFromCellList(cellList).Count < TargetNumWords);
 
             return cellList;
         }
@@ -244,7 +244,7 @@ namespace CrusadexGenerator
         private CrusadexCell ChooseWordStartingCellFromDirectionalWord(DirectionalWord wordInput, List<CrusadexCell> cellList)
         {
             var range = wordInput.Cells.Select(c => c).ToList();
-            var htmlOutput = CellListHelpers.GetHtmlStringTable(cellList, _options.Height);
+            var htmlOutput = CrusadexCellListHelpers.GetHtmlStringTable(cellList);
 
             foreach (var wordCell in wordInput.Cells)
             {

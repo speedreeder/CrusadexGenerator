@@ -1,6 +1,6 @@
 ﻿namespace CrusadexGenerator
 {
-    internal class DirectionalWord
+    public class DirectionalWord
     {
         public DirectionalWord(bool isVertical, List<CrusadexCell> cells)
         {

@@ -8,6 +8,13 @@ Engine for generating clue-less crossword-style puzzle grids called [crusadex, c
     
 # How To Use
 
+## Generation
+
+This will give you a `List<CrusadexCell>`. Each `CrusadexCell` has three properties:
+- **Column** (string) The column of the cell ("A", "B" ... "AA", "AB", etc.)
+- **Row** (int) The row of the cell (1, 2 .... 99, 100, etc.)
+- **Selected** (boolean) Whether or not this cell is selected in the puzzle
+
 ```csharp
 var options = new CrusadexGeneratorOptions
 {
@@ -36,5 +43,23 @@ var options = new CrusadexGeneratorOptions
 };
 
 var generator = new CrusadexGenerator(options);
-generator.Generate();
+var result = generator.Generate();
 ```
+
+## Checking
+
+You can use the `CrusadexCellListHelpers.GetHtmlStringTable(cellList)` class to check your output:
+
+```csharp
+var options = new CrusadexGeneratorOptions();
+var generator = new CrusadexGenerator(options);
+var cellList = generator.Generate();
+
+var htmlOutput = CrusadexCellListHelpers.GetHtmlStringTable(cellList);
+```
+
+That will give you an HTML string that you can save as an HTML file or plug into any HTML visualizer. Here are some examples (using https://html.onlineviewer.net/):
+
+
+
+

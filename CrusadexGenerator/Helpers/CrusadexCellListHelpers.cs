@@ -1,13 +1,11 @@
 ﻿using CrusadexGenerator.Extensions;
 using HtmlTags;
-using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("CrusadexGenerator.Test")]
 namespace CrusadexGenerator.Helpers
 {
-    internal static class CellListHelpers
+    public static class CrusadexCellListHelpers
     {
-        internal static List<DirectionalWord> GetWordsFromCellList(List<CrusadexCell> cellList)
+        public static List<DirectionalWord> GetWordsFromCellList(List<CrusadexCell> cellList)
         {
             var words = new List<DirectionalWord>();
             var checkList = cellList.Where(c => c.Selected).ToList();
@@ -44,13 +42,12 @@ namespace CrusadexGenerator.Helpers
 
                     words.Add(word);
                 }
-
             }
 
             return words;
         }
 
-        internal static int GetCubeJointsCreatedWithWord(List<CrusadexCell> cellList, List<CrusadexCell> inProgressWordCells)
+        public static int GetCubeJointsCreatedWithWord(List<CrusadexCell> cellList, List<CrusadexCell> inProgressWordCells)
         {
             var copyOfCellList = cellList.Select(c => new CrusadexCell(c.Column, c.Row, c.Selected)).ToList();
             foreach (var cell in inProgressWordCells)
@@ -62,7 +59,7 @@ namespace CrusadexGenerator.Helpers
             return GetCubeJointsInList(copyOfCellList, inProgressWordCells);
         }
 
-        internal static int GetCubeJointsInList(List<CrusadexCell> cellList, List<CrusadexCell> inProgressWordCells)
+        public static int GetCubeJointsInList(List<CrusadexCell> cellList, List<CrusadexCell> inProgressWordCells)
         {
             var cubeJoints = new List<(CrusadexCell TopLeft, CrusadexCell TopRight, CrusadexCell BottomLeft, CrusadexCell BottomRight)>();
             var checkList = cellList.Where(c => c.Selected).ToList();
@@ -130,8 +127,9 @@ namespace CrusadexGenerator.Helpers
             return cubeJoints.Count;
         }
 
-        internal static string GetHtmlStringTable(List<CrusadexCell> cellList, int height)
+        public static string GetHtmlStringTable(List<CrusadexCell> cellList)
         {
+            var height = cellList.Max(s => s.Row);
             var resultHtml = new HtmlTag("table").Style("border-collapse", "collapse").Style("border", "1px solid #FF0000");
 
             for (var i = 1; i <= height; i++)

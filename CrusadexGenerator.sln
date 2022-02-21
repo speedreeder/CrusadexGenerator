@@ -3,13 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrusadexGenerator", ".\CrusadexGenerator\CrusadexGenerator.csproj", "{44C46166-E444-4023-B006-3F829016EEAA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrusadexGenerator", "CrusadexGenerator\CrusadexGenerator.csproj", "{44C46166-E444-4023-B006-3F829016EEAA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrusadexGenerator.Test", ".\CrusadexGenerator.Test\CrusadexGenerator.Test.csproj", "{326A895A-CF5D-4BFE-9FB0-631A066D07B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrusadexGenerator.Test", "CrusadexGenerator.Test\CrusadexGenerator.Test.csproj", "{326A895A-CF5D-4BFE-9FB0-631A066D07B9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A67B634F-F8A6-42C0-8197-714E6C31D060}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Examples\10x10.png = Examples\10x10.png
+		Examples\15x15.png = Examples\15x15.png
+		Examples\8x8cj.png = Examples\8x8cj.png
+		LICENSE.txt = LICENSE.txt
+		README.md = README.md
 	EndProjectSection
 EndProject
 Global
