@@ -4,7 +4,7 @@ Engine for generating clue-less crossword-style puzzle grids called [crusadex, c
 
 # Installing via NuGet
 
-    Install-Package 
+    Install-Package CrusadexGenerator
     
 # How To Use
 
