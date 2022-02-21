@@ -8,6 +8,9 @@
     <Company>PeacePlaneStudios</Company>
     <Authors>Alexander Reeder</Authors>
     <Version>1.0.0</Version>
+    <PackageProjectUrl>https://github.com/speedreeder/CrusadexGenerator</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/speedreeder/CrusadexGenerator.git</RepositoryUrl>
+    <PackageTags>crusadex;crossword;cruzadex;puzzle;</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
