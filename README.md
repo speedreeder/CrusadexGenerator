@@ -42,17 +42,17 @@ var options = new CrusadexGeneratorOptions
     MinWords = 2    // default: 2
 };
 
-var generator = new CrusadexGenerator(options);
+var generator = new Generator(options);
 var result = generator.Generate();
 ```
 
 ## Checking
 
-You can use the `CrusadexCellListHelpers.GetHtmlStringTable(cellList)` class to check your output:
+You can use the `CrusadexCellListHelpers.GetHtmlStringTable(cellList)` static method to check your output:
 
 ```csharp
 var options = new CrusadexGeneratorOptions();
-var generator = new CrusadexGenerator(options);
+var generator = new Generator(options);
 var cellList = generator.Generate();
 
 var htmlOutput = CrusadexCellListHelpers.GetHtmlStringTable(cellList);
