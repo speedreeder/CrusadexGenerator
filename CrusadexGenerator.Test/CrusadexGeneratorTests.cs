@@ -16,7 +16,7 @@ namespace CrusadexGenerator.Test
         [TestCase(20, 10)]
         public void Generate_ResultGridHasCorrectNumberOfCells(int height, int width)
         {
-            var sut = new CrusadexGenerator(new CrusadexGeneratorOptions { Height = height, Width = width });
+            var sut = new Generator(new CrusadexGeneratorOptions { Height = height, Width = width });
             var result = sut.Generate();
 
             var htmlOutput = CrusadexCellListHelpers.GetHtmlStringTable(result);
@@ -33,7 +33,7 @@ namespace CrusadexGenerator.Test
         [TestCase(10, 8, 15, 15, 6)]
         public void Generate_ResultGridHasCorrectNumberOfCubeJoints(int numberOfWords, int maxWordLength, int height, int width, int maxCubeJoints)
         {
-            var sut = new CrusadexGenerator(new CrusadexGeneratorOptions
+            var sut = new Generator(new CrusadexGeneratorOptions
             {
                 Height = height,
                 Width = width,
@@ -72,7 +72,7 @@ namespace CrusadexGenerator.Test
         {
             Assert.Throws<CrusadexGeneratorException>(() =>
             {
-                var sut = new CrusadexGenerator(new CrusadexGeneratorOptions
+                var sut = new Generator(new CrusadexGeneratorOptions
                 {
                     Height = height,
                     Width = width,
@@ -100,7 +100,7 @@ namespace CrusadexGenerator.Test
             var height = 20;
             var width = 20;
 
-            var sut = new CrusadexGenerator(new CrusadexGeneratorOptions { Height = height, Width = width, MinWords = minNumberOfWords, MaxWords = maxNumberOfWords });
+            var sut = new Generator(new CrusadexGeneratorOptions { Height = height, Width = width, MinWords = minNumberOfWords, MaxWords = maxNumberOfWords });
             var result = sut.Generate();
 
             var htmlOutput = CrusadexCellListHelpers.GetHtmlStringTable(result);
@@ -127,7 +127,7 @@ namespace CrusadexGenerator.Test
             {
                 try
                 {
-                    var sut = new CrusadexGenerator(new CrusadexGeneratorOptions
+                    var sut = new Generator(new CrusadexGeneratorOptions
                     {
                         Height = height,
                         Width = width,

@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace CrusadexGenerator
 {
-    public class CrusadexGenerator
+    public class Generator
     {
         private readonly CrusadexGeneratorOptions _options;
         private int TwoLetterWordsGenerated = 0;
@@ -13,7 +13,7 @@ namespace CrusadexGenerator
 
         private readonly int TargetNumWords = 0;
 
-        public CrusadexGenerator(CrusadexGeneratorOptions options)
+        public Generator(CrusadexGeneratorOptions options)
         {
             _options = options;
 
